@@ -1,0 +1,38 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+---
+<BaseLayout title="Stories">
+  <Header />
+  <main>
+    <h1>Stories</h1>
+    <p>Placeholder content coming soon.</p>
+  </main>
+</BaseLayout>
+
+<style>
+  body {
+    font-family: 'Formera', sans-serif;
+    background: #f5f2ee;
+    color: #2a2a2a;
+  }
+
+  main {
+    max-width: 720px;
+    margin: 80px auto;
+    padding: 0 48px;
+  }
+
+  h1 {
+    font-family: 'Beth Ellen', cursive;
+    font-size: 2.5rem;
+    margin-bottom: 32px;
+    font-weight: 400;
+  }
+
+  p {
+    font-size: 1rem;
+    line-height: 1.75;
+    opacity: 0.6;
+  }
+</style>
