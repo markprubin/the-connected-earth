@@ -1,52 +1,39 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
-import { sanityClient } from '../lib/sanity';
 
-const stories = await sanityClient.fetch(`
-  *[_type == "story"] | order(publishedAt desc) {
-    _id,
-    title,
-    slug,
-    category,
-    publishedAt,
-    coverPhoto {
-      asset -> { url },
-      caption
-    }
-  }
-`);
+const stories = [
+  { title: "The Last Fishermen of the Aral Sea", category: "Photojournalism", date: "March 2026", img: "https://picsum.photos/seed/aral/1200/800" },
+  { title: "Burning Season", category: "Photojournalism", date: "February 2026", img: "https://picsum.photos/seed/burn/1200/800" },
+  { title: "Where the Ice Remembers", category: "Blog", date: "February 2026", img: "https://picsum.photos/seed/ice/1200/800" },
+  { title: "Voices from the Flood Plain", category: "Photojournalism", date: "January 2026", img: "https://picsum.photos/seed/flood/1200/800" },
+  { title: "The Quiet After the Storm", category: "Blog", date: "January 2026", img: "https://picsum.photos/seed/storm/1200/800" },
+  { title: "Children of the Dust", category: "Photojournalism", date: "December 2025", img: "https://picsum.photos/seed/dust/1200/800" },
+  { title: "Crossing the Cerrado", category: "Photojournalism", date: "November 2025", img: "https://picsum.photos/seed/cerrado/1200/800" },
+  { title: "A River With No Name", category: "Blog", date: "October 2025", img: "https://picsum.photos/seed/river/1200/800" },
+  { title: "When the Monsoon Fails", category: "Photojournalism", date: "September 2025", img: "https://picsum.photos/seed/monsoon/1200/800" },
+];
 ---
-<BaseLayout title="Stories">
+<BaseLayout title="Stories — Test">
   <div class="page">
     <Header dark={true} />
     <main>
-      {stories.length === 0 ? (
-        <p class="empty">No stories yet.</p>
-      ) : (
-        <div class="grid">
-          {stories.map((story: any) => (
-            <article class="card">
-              <a href={`/stories/${story.slug.current}`}>
-                <div class="card-image">
-                  {story.coverPhoto?.asset?.url && (
-                    <img src={story.coverPhoto.asset.url} alt={story.coverPhoto.caption || story.title} />
-                  )}
-                  <div class="card-overlay">
-                    <h2 class="card-title">{story.title}</h2>
-                    <div class="card-meta">
-                      <span class="category">{story.category}</span>
-                      {story.publishedAt && (
-                        <span class="date">{new Date(story.publishedAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
-                      )}
-                    </div>
-                  </div>
+      <div class="grid">
+        {stories.map(story => (
+          <article class="card">
+            <div class="card-image">
+              <img src={story.img} alt={story.title} />
+              <div class="card-overlay">
+                <h2 class="card-title">{story.title}</h2>
+                <div class="card-meta">
+                  <span class="category">{story.category}</span>
+                  <span class="date">{story.date}</span>
                 </div>
-              </a>
-            </article>
-          ))}
-        </div>
-      )}
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
     </main>
   </div>
 </BaseLayout>
@@ -64,22 +51,10 @@ const stories = await sanityClient.fetch(`
     padding: 64px 48px 120px;
   }
 
-  .empty {
-    font-family: 'Formera', sans-serif;
-    color: rgba(232, 228, 220, 0.3);
-    font-size: 0.9rem;
-    letter-spacing: 0.1em;
-  }
-
   .grid {
     display: flex;
     flex-direction: column;
     gap: 120px;
-  }
-
-  .card a {
-    text-decoration: none;
-    display: block;
   }
 
   .card {

@@ -3,36 +3,100 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 ---
 <BaseLayout title="About">
-  <Header />
-  <main>
-    <h1>About</h1>
-    <p>Placeholder content coming soon.</p>
-  </main>
+  <div class="page">
+    <Header />
+    <div class="hero-image">
+      <img src="https://picsum.photos/seed/about/1600/900" alt="About The Connected Earth" />
+    </div>
+    <main>
+      <div class="content">
+        <p class="label">About</p>
+        <h1>The Connected Earth</h1>
+        <p class="statement">
+          A placeholder for a personal statement — who you are, what drives you to document the world, and why the earth's stories matter.
+        </p>
+        <div class="divider"></div>
+        <p class="bio">
+          This is where your background lives. Your experience as a photojournalist, the places you've been, the people you've met. Written in your voice, at whatever length feels right.
+        </p>
+        <p class="bio">
+          A second paragraph for the mission of the site — what The Connected Earth is, what kinds of stories it tells, and who it's for.
+        </p>
+      </div>
+    </main>
+  </div>
 </BaseLayout>
 
 <style>
-  body {
-    font-family: 'Formera', sans-serif;
-    background: #f5f2ee;
-    color: #2a2a2a;
+  .page {
+    min-height: 100vh;
+    background: #ffffff;
+    color: #1a1a1a;
+  }
+
+  .hero-image {
+    width: 100%;
+    height: 25vh;
+    overflow: hidden;
+  }
+
+  .hero-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: brightness(0.85) saturate(0.8);
   }
 
   main {
-    max-width: 720px;
-    margin: 80px auto;
-    padding: 0 48px;
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 80px 48px 140px;
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .label {
+    font-family: 'Formera', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(26, 26, 26, 0.35);
   }
 
   h1 {
     font-family: 'Beth Ellen', cursive;
-    font-size: 2.5rem;
-    margin-bottom: 32px;
+    font-size: clamp(2.2rem, 4vw, 3.5rem);
     font-weight: 400;
+    line-height: 1.15;
+    color: #1a1a1a;
   }
 
-  p {
+  .statement {
+    font-family: 'Darker Grotesque', sans-serif;
+    font-size: clamp(1.2rem, 2vw, 1.5rem);
+    font-weight: 500;
+    line-height: 1.6;
+    color: rgba(26, 26, 26, 0.75);
+    max-width: 640px;
+  }
+
+  .divider {
+    width: 40px;
+    height: 1px;
+    background: rgba(26, 26, 26, 0.2);
+    margin: 8px 0;
+  }
+
+  .bio {
+    font-family: 'Formera', sans-serif;
     font-size: 1rem;
-    line-height: 1.75;
-    opacity: 0.6;
+    line-height: 1.85;
+    color: rgba(26, 26, 26, 0.55);
+    max-width: 640px;
   }
 </style>
