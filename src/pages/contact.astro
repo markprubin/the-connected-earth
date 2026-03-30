@@ -1,0 +1,315 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+---
+<BaseLayout title="Contact">
+  <div class="page">
+    <Header />
+    <div class="az-bg" aria-hidden="true">
+      <svg viewBox="0 0 300 350" xmlns="http://www.w3.org/2000/svg" class="az-svg">
+        <!-- Arizona shape: rectangle with NW notch -->
+        <path d="M 55,0 L 300,0 L 300,350 L 0,350 L 0,55 L 55,55 Z" class="az-shape"/>
+        <!-- Phoenix dot -->
+        <circle cx="141" cy="217" r="5" class="az-dot"/>
+        <text x="152" y="221" class="az-label">Phoenix</text>
+      </svg>
+    </div>
+    <main>
+      <div class="content">
+        <p class="label">Contact</p>
+        <div class="profile">
+          <img src="/images/headshot.png" alt="Mark Rubin" class="headshot" />
+          <div class="info">
+            <h1>Mark Rubin</h1>
+          </div>
+        </div>
+        <form action="https://formspree.io/f/xvzvaoll" method="POST" class="contact-form">
+          <div class="form-row">
+            <div class="field">
+              <label for="firstName">First Name</label>
+              <input type="text" id="firstName" name="firstName" required />
+            </div>
+            <div class="field">
+              <label for="lastName">Last Name</label>
+              <input type="text" id="lastName" name="lastName" required />
+            </div>
+          </div>
+          <div class="field">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required />
+          </div>
+          <div class="field">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" rows="6" required></textarea>
+          </div>
+          <button type="submit">Send</button>
+        </form>
+      </div>
+    </main>
+    <footer>
+      <a href="mailto:markrubin@thelastingwake.com">markrubin@thelastingwake.com</a>
+    </footer>
+  </div>
+</BaseLayout>
+
+<style>
+  .page {
+    min-height: 100vh;
+    background: #ffffff;
+    color: #1a1a1a;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .az-bg {
+    position: absolute;
+    right: -60px;
+    bottom: -40px;
+    width: 420px;
+    opacity: 0.055;
+    transform: rotate(-6deg);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .az-svg {
+    width: 100%;
+    height: auto;
+  }
+
+  .az-shape {
+    fill: #1a1a1a;
+  }
+
+  .az-dot {
+    fill: #ffffff;
+  }
+
+  .az-label {
+    font-family: 'Formera', sans-serif;
+    font-size: 18px;
+    fill: #ffffff;
+    letter-spacing: 0.1em;
+  }
+
+  main {
+    min-height: calc(100vh - 80px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 48px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .content {
+    width: 100%;
+    max-width: 560px;
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+  }
+
+  .label {
+    font-family: 'Formera', sans-serif;
+    font-size: 1.5rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(26, 26, 26, 0.35);
+  }
+
+  .profile {
+    display: flex;
+    align-items: center;
+    gap: 48px;
+  }
+
+  .headshot {
+    width: 160px;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 50%;
+    filter: saturate(0.85);
+  }
+
+  .info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  h1 {
+    font-family: 'Beth Ellen', cursive;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 400;
+    color: #1a1a1a;
+  }
+
+  .email {
+    font-family: 'Formera', sans-serif;
+    font-size: 0.95rem;
+    color: rgba(26, 26, 26, 0.5);
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    transition: color 0.2s ease;
+  }
+
+  .email:hover {
+    color: #1a1a1a;
+  }
+
+  .location {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .map-wrap {
+    width: 100%;
+    max-width: 480px;
+  }
+
+  .us-map {
+    width: 100%;
+    height: auto;
+  }
+
+  .us-outline {
+    fill: none;
+    stroke: rgba(26, 26, 26, 0.12);
+    stroke-width: 1.5;
+  }
+
+  .phoenix-dot {
+    fill: #1a1a1a;
+    opacity: 0.7;
+  }
+
+  .phoenix-pulse {
+    fill: none;
+    stroke: rgba(26, 26, 26, 0.25);
+    stroke-width: 1;
+    animation: pulse 2.5s ease-out infinite;
+  }
+
+  @keyframes pulse {
+    0% { r: 4; opacity: 0.6; }
+    100% { r: 18; opacity: 0; }
+  }
+
+  .location-label {
+    font-family: 'Formera', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(26, 26, 26, 0.35);
+  }
+
+  .contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 560px;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  label {
+    font-family: 'Formera', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(26, 26, 26, 0.4);
+  }
+
+  input, textarea {
+    font-family: 'Formera', sans-serif;
+    font-size: 0.95rem;
+    color: #1a1a1a;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(26, 26, 26, 0.2);
+    padding: 8px 0;
+    outline: none;
+    transition: border-color 0.2s ease;
+    resize: none;
+  }
+
+  input:focus, textarea:focus {
+    border-bottom-color: rgba(26, 26, 26, 0.6);
+  }
+
+  button[type="submit"] {
+    align-self: flex-start;
+    font-family: 'Formera', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(26, 26, 26, 0.6);
+    background: none;
+    border: 1px solid rgba(26, 26, 26, 0.2);
+    padding: 12px 28px;
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  button[type="submit"]:hover {
+    color: #1a1a1a;
+    border-color: rgba(26, 26, 26, 0.5);
+  }
+
+  footer {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+  }
+
+  footer a {
+    font-family: 'Formera', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: rgba(26, 26, 26, 0.25);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  footer a:hover {
+    color: rgba(26, 26, 26, 0.5);
+  }
+
+  @media (max-width: 600px) {
+    main {
+      padding: 20px 20px 60px;
+    }
+
+    .profile {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 28px;
+    }
+
+    .headshot {
+      width: 120px;
+      height: 120px;
+    }
+
+    .form-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
