@@ -6,21 +6,26 @@ import Header from '../components/Header.astro';
   <div class="page">
     <Header />
     <div class="hero-image">
-      <img src="https://picsum.photos/seed/about/1600/900" alt="About The Connected Earth" />
+      <img src="/images/bailey-zindel-0JYgd2QuMfw-unsplash.jpg" alt="About The Connected Earth" />
     </div>
     <main>
       <div class="content">
         <p class="label">About</p>
-        <h1>The Connected Earth</h1>
         <p class="statement">
-          A placeholder for a personal statement — who you are, what drives you to document the world, and why the earth's stories matter.
+          We are no different from any other living thing on this Earth. We belong to nature — not above it. To find our way back, we must first reconnect with each other, and remember what we've always been a part of. The natural world.
         </p>
         <div class="divider"></div>
         <p class="bio">
-          This is where your background lives. Your experience as a photojournalist, the places you've been, the people you've met. Written in your voice, at whatever length feels right.
+          We lack connection. There is enough data and science out there to convince us that the world is changing at a rapid pace quicker than it should "naturally." Some in this world are experiencing intense consequences of the world shifting, some having permanent life changes.
         </p>
         <p class="bio">
-          A second paragraph for the mission of the site — what The Connected Earth is, what kinds of stories it tells, and who it's for.
+          Many of us living in the countries that contribute the most towards climate change are out of touch with the effects it has on other people living in high-risk areas. People are suffering now. Their health, their homes, their lineage, and their history. The natural world is facing dire circumstances on land and in our oceans, where some environments have become so inhabitable that species are already in drastically low numbers. And soon enough, these effects will become readily apparent in the "western" world, and we will ask ourselves, "Why didn't we do anything?"
+        </p>
+        <p class="bio">
+          It is at our doorsteps. The sooner we understand that our connection with others that we will never ever come to know and the reattachment to nature and what it provides us, the sooner we can all come together in solidarity and demand that something be done about the situation we find ourselves in.
+        </p>
+        <p class="bio">
+          In numbers together, we are much, much stronger.
         </p>
       </div>
     </main>
@@ -44,6 +49,7 @@ import Header from '../components/Header.astro';
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center 30%;
     display: block;
     filter: brightness(0.85) saturate(0.8);
   }
@@ -62,7 +68,7 @@ import Header from '../components/Header.astro';
 
   .label {
     font-family: 'Formera', sans-serif;
-    font-size: 0.65rem;
+    font-size: 1.5rem;
     letter-spacing: 0.25em;
     text-transform: uppercase;
     color: rgba(26, 26, 26, 0.35);
@@ -70,7 +76,7 @@ import Header from '../components/Header.astro';
 
   h1 {
     font-family: 'Beth Ellen', cursive;
-    font-size: clamp(2.2rem, 4vw, 3.5rem);
+    font-size: clamp(3rem, 5vw, 5rem);
     font-weight: 400;
     line-height: 1.15;
     color: #1a1a1a;
@@ -78,7 +84,16 @@ import Header from '../components/Header.astro';
 
   .statement {
     font-family: 'Darker Grotesque', sans-serif;
-    font-size: clamp(1.2rem, 2vw, 1.5rem);
+    font-size: clamp(1.6rem, 2.5vw, 2.2rem);
+    font-weight: 500;
+    line-height: 1.6;
+    color: rgba(26, 26, 26, 0.75);
+    max-width: 640px;
+  }
+
+  .statement-piece {
+    font-family: 'Darker Grotesque', sans-serif;
+    font-size: clamp(1.6rem, 2.5vw, 2.2rem);
     font-weight: 500;
     line-height: 1.6;
     color: rgba(26, 26, 26, 0.75);
@@ -94,7 +109,7 @@ import Header from '../components/Header.astro';
 
   .bio {
     font-family: 'Formera', sans-serif;
-    font-size: 1rem;
+    font-size: 1.2rem;
     line-height: 1.85;
     color: rgba(26, 26, 26, 0.55);
     max-width: 640px;
