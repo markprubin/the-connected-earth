@@ -22,6 +22,14 @@ export default defineType({
       validation: Rule => Rule.required(),
     }),
     defineField({
+      name: 'description',
+      title: 'Meta Description',
+      type: 'text',
+      rows: 2,
+      description: 'Short summary for search engines and social sharing (150–160 characters).',
+      validation: Rule => Rule.max(160),
+    }),
+    defineField({
       name: 'coverPhoto',
       title: 'Cover Photo',
       type: 'image',

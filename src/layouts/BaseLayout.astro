@@ -1,15 +1,43 @@
 ---
-const { title } = Astro.props;
+const {
+  title,
+  description = 'The Connected Earth — photojournalism and stories about our changing planet.',
+  image = '/images/Logo_Circle.png',
+  canonicalURL = Astro.url.href,
+} = Astro.props;
+
+const fullTitle = title === 'The Connected Earth' ? title : `${title} — The Connected Earth`;
 ---
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{title} — The Connected Earth</title>
+
+  <!-- Primary SEO -->
+  <title>{fullTitle}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonicalURL} />
+
+  <!-- Open Graph (social sharing) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content={fullTitle} />
+  <meta property="og:description" content={description} />
+  <meta property="og:image" content={image} />
+  <meta property="og:url" content={canonicalURL} />
+  <meta property="og:site_name" content="The Connected Earth" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={fullTitle} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={image} />
+
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Beth+Ellen&family=Chakra+Petch:wght@300;400;500&family=Darker+Grotesque:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
+
   <style>
     @font-face {
       font-family: 'Formera';
