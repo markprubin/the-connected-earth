@@ -97,3 +97,88 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     background: rgba(255, 255, 255, 0.15);
   }
 </style>
+
+<div class="coming-soon-overlay" id="comingSoonOverlay">
+  <div class="coming-soon-modal">
+    <p class="coming-soon-label">Notice</p>
+    <h2 class="coming-soon-title">We're not ready yet.</h2>
+    <p class="coming-soon-body">Something is being built here. Check back soon — the earth has stories to tell.</p>
+    <button class="coming-soon-close" onclick="document.getElementById('comingSoonOverlay').style.display='none'">Dismiss</button>
+  </div>
+</div>
+
+<style>
+  .coming-soon-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+
+  .coming-soon-modal {
+    background: #111111;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    max-width: 480px;
+    width: 90%;
+    padding: 52px 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .coming-soon-label {
+    font-family: 'Formera', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(232, 228, 220, 0.35);
+  }
+
+  .coming-soon-title {
+    font-family: 'Beth Ellen', cursive;
+    font-size: 2rem;
+    font-weight: 400;
+    color: #e8e4dc;
+    line-height: 1.2;
+  }
+
+  .coming-soon-body {
+    font-family: 'Formera', sans-serif;
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: rgba(232, 228, 220, 0.55);
+  }
+
+  .coming-soon-close {
+    align-self: flex-start;
+    margin-top: 8px;
+    font-family: 'Formera', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(232, 228, 220, 0.5);
+    background: none;
+    border: 1px solid rgba(232, 228, 220, 0.15);
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .coming-soon-close:hover {
+    color: #e8e4dc;
+    border-color: rgba(232, 228, 220, 0.4);
+  }
+</style>
+
+<script>
+  setTimeout(() => {
+    const overlay = document.getElementById('comingSoonOverlay');
+    if (overlay) {
+      overlay.style.display = 'flex';
+    }
+  }, 1000);
+</script>

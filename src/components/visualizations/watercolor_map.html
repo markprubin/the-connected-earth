@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+body {
+  margin: 0;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+.watercolor {
+  width: 100%;
+  height: auto;
+}
+#map {
+  width: 100%;
+}
+.mesh {
+  stroke: #777;
+  fill: none;
+  opacity: 0.8;
+  stroke-width: 2px;
+  stroke-linejoin: round;
+}
+h1 {
+  margin: 30px 0 4px;
+  font-size: 22px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.85);
+  letter-spacing: 0.5px;
+}
+p.subtitle {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  font-style: italic;
+}
+
+</style>
+<body>
+<h1>Colorado River Water Dispute</h1>
+<p class="subtitle">Seven basin states locked in post-2026 negotiations</p>
+<div id="map"></div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.16.0/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/simplify-js@1.2.4/simplify.min.js"></script>
+<script>
+
+// --- Config (matching Veltman's default slider values) ---
+var noise = 0.01;
+var blur = 0.8;
+var strokeWidth = 3.5;
+var deviation = 2;
+var drawMesh = false;  // no pencil outlines
+var simplification = 1.8;
+var tension = 0.6;
+
+var disputeStates = new Set([
+  "Colorado", "Utah", "Wyoming", "New Mexico",
+  "California", "Arizona", "Nevada"
+]);
+
+// Single color for all dispute states
+var disputeColor = "#e07038";
+
+// Single color for all other states (light green/seafoam)
+var otherColor = "#88c9a0";
+
+// --- Scales and helpers ---
+var blurScale = d3.scaleLinear()
+    .domain([0, 2000])
+    .range([deviation, deviation * 3.5])
+    .clamp(true);
+
+var spline = d3.line().curve(d3.curveCardinal.tension(tension));
+
+var uidCounter = 0;
+function uid(name) {
+  var id = name + "-" + (++uidCounter);
+  return { id: id, toString: function() { return "url(#" + id + ")"; } };
+}
+
+// --- Load data and render ---
+d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json").then(function(us) {
+
+  var projection = d3.geoAlbersUsa().scale(1750).translate([700, 450]);
+  var path = d3.geoPath().projection(projection);
+
+  // --- Prepare states with greedy coloring ---
+  var statesData = topojson.feature(us, us.objects.states).features;
+
+  // Filter out territories that can't be projected
+  statesData = statesData.filter(function(d) {
+    return path(d) !== null && path(d) !== undefined && path.area(d) > 0;
+  });
+
+  var neighbors = topojson.neighbors(us.objects.states.geometries);
+
+  statesData.forEach(function(d, i) {
+    var isDispute = disputeStates.has(d.properties.name);
+    d.properties.color = isDispute ? disputeColor : otherColor;
+  });
+
+  // --- Prepare mesh (project coordinates for spline) ---
+  var meshData = topojson.mesh(us, us.objects.states)
+    .coordinates.map(function(line) {
+      var projected = line.map(function(d) {
+        var p = projection(d);
+        return p ? { x: p[0], y: p[1] } : null;
+      }).filter(Boolean);
+      return simplify(projected, simplification, true).map(function(d) {
+        return [d.x, d.y];
+      });
+    });
+
+  // --- Build SVG ---
+  var svg = d3.select("#map")
+    .append("svg")
+    .attr("viewBox", "0 0 1400 900")
+    .attr("class", "watercolor");
+
+  var defs = svg.append("defs");
+
+  // Outer splotch filter (turbulence + blur on the whole group)
+  var splotch = uid("splotch");
+  defs.append("filter")
+    .attr("id", splotch.id)
+    .html(
+      (noise
+        ? '<feTurbulence type="fractalNoise" baseFrequency="' + noise + '" numOctaves="4"></feTurbulence>' +
+          '<feColorMatrix values="0 0 0 0 0, 0 0 0 0 0, 0 0 0 0 0, 0 0 0 -0.9 1.2" result="texture"></feColorMatrix>' +
+          '<feComposite in="SourceGraphic" in2="texture" operator="in"></feComposite>'
+        : '') +
+      '<feGaussianBlur stdDeviation="' + blur + '"></feGaussianBlur>'
+    );
+
+  // Per-state filters (blur → threshold → composite)
+  statesData.forEach(function(d, i) {
+    d.filterUid = uid("filter" + i);
+  });
+
+  defs.selectAll(".statefilter")
+    .data(statesData)
+    .enter()
+    .append("filter")
+    .attr("id", function(d) { return d.filterUid.id; })
+    .html(function(d) {
+      var stdDev = blurScale(path.area(d));
+      return '<feGaussianBlur in="SourceGraphic" stdDeviation="' + stdDev + '" result="blur"></feGaussianBlur>' +
+             '<feColorMatrix in="blur" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9" result="threshold"></feColorMatrix>' +
+             '<feComposite in="SourceGraphic" in2="threshold" operator="atop"></feComposite>';
+    });
+
+  // Draw state groups with both filters
+  var groups = svg.selectAll(".state")
+    .data(statesData)
+    .enter()
+    .append("g")
+    .attr("class", "state")
+    .attr("filter", splotch);
+
+  groups.append("path")
+    .attr("d", path)
+    .attr("fill", function(d) { return d.properties.color; })
+    .attr("stroke", function(d) { return d.properties.color; })
+    .attr("stroke-width", strokeWidth)
+    .attr("filter", function(d) { return d.filterUid; });
+
+  // Optional pencil mesh
+  if (drawMesh) {
+    var pencil = uid("pencil");
+    defs.append("filter").attr("id", pencil.id)
+      .html('<feTurbulence baseFrequency="0.03" numOctaves="6" type="fractalNoise" />' +
+            '<feDisplacementMap scale="4" in="SourceGraphic" xChannelSelector="R" yChannelSelector="G" />' +
+            '<feGaussianBlur stdDeviation="0.5" />');
+
+    svg.append("g")
+      .attr("class", "mesh")
+      .attr("filter", pencil)
+      .append("path")
+      .attr("d", meshData.map(spline).join(""));
+  }
+
+  // --- Colorado River watercolor line ---
+  // Accurate Colorado River path:
+  // Headwaters at La Poudre Pass → SW through CO → Glenwood Springs → Grand Junction →
+  // into Utah → Moab → Cataract Canyon → Glen Canyon/Lake Powell →
+  // Lees Ferry → Grand Canyon → Lake Mead (AZ-NV border) →
+  // south along AZ-CA border → Yuma → Mexico
+  var riverCoords = [
+    // Headwaters - Rocky Mountain NP, CO
+    [-105.76, 40.48],
+    [-105.90, 40.35],
+    [-106.10, 40.20],
+    [-106.35, 40.05],
+    // Through Colorado - Hot Sulphur Springs area
+    [-106.52, 39.95],
+    [-106.65, 39.85],
+    // Near Kremmling
+    [-106.38, 39.93],
+    // Gore Canyon / Dotsero
+    [-106.85, 39.65],
+    [-107.00, 39.58],
+    // Glenwood Springs
+    [-107.32, 39.55],
+    // Rifle
+    [-107.78, 39.53],
+    // Grand Junction area (meets Gunnison)
+    [-108.55, 39.07],
+    // Near Fruita, CO heading to Utah
+    [-108.73, 39.16],
+    [-109.02, 39.12],
+    // Westwater Canyon, entering Utah
+    [-109.22, 38.98],
+    [-109.40, 38.82],
+    // Near Moab, UT
+    [-109.55, 38.60],
+    [-109.62, 38.50],
+    // Confluence with Green River
+    [-109.88, 38.18],
+    // Cataract Canyon
+    [-109.95, 38.00],
+    [-110.05, 37.85],
+    // Glen Canyon / Lake Powell
+    [-110.20, 37.60],
+    [-110.40, 37.40],
+    [-110.60, 37.20],
+    [-110.80, 37.10],
+    [-111.00, 37.05],
+    [-111.25, 37.00],
+    [-111.40, 36.95],
+    [-111.48, 36.92],
+    // Lees Ferry (start of Grand Canyon)
+    [-111.59, 36.87],
+    // Marble Canyon
+    [-111.63, 36.80],
+    [-111.70, 36.72],
+    [-111.80, 36.65],
+    // Grand Canyon
+    [-111.85, 36.60],
+    [-111.95, 36.52],
+    [-112.05, 36.48],
+    [-112.12, 36.42],
+    [-112.20, 36.38],
+    [-112.35, 36.30],
+    [-112.50, 36.22],
+    [-112.70, 36.18],
+    [-112.90, 36.12],
+    [-113.10, 36.08],
+    [-113.30, 36.05],
+    [-113.50, 36.02],
+    [-113.70, 36.00],
+    // End of Grand Canyon / Lake Mead approach
+    [-113.90, 36.00],
+    [-114.05, 36.02],
+    // Lake Mead / Hoover Dam (AZ-NV border)
+    [-114.15, 36.02],
+    [-114.30, 36.01],
+    [-114.44, 36.00],
+    [-114.55, 35.98],
+    [-114.62, 35.90],
+    // Turning south - AZ-NV border then AZ-CA border
+    [-114.63, 35.80],
+    [-114.60, 35.65],
+    [-114.57, 35.50],
+    // Laughlin/Needles area
+    [-114.58, 35.35],
+    [-114.60, 35.20],
+    [-114.55, 35.10],
+    [-114.52, 35.00],
+    // Lake Havasu
+    [-114.42, 34.85],
+    [-114.35, 34.70],
+    [-114.32, 34.55],
+    // Parker Dam area
+    [-114.28, 34.40],
+    [-114.25, 34.30],
+    [-114.30, 34.15],
+    [-114.35, 34.00],
+    // Blythe area
+    [-114.42, 33.85],
+    [-114.48, 33.70],
+    [-114.52, 33.55],
+    // Imperial Dam
+    [-114.55, 33.40],
+    [-114.58, 33.20],
+    [-114.60, 33.00],
+    // Yuma, AZ
+    [-114.62, 32.80],
+    [-114.65, 32.72],
+    // Mexico border
+    [-114.72, 32.55],
+    [-114.75, 32.45]
+  ];
+
+  // Project river coordinates
+  var riverProjected = riverCoords.map(function(c) {
+    return projection(c);
+  }).filter(Boolean);
+
+  // Create a watercolor filter for the river
+  var riverFilter = uid("riverfilter");
+  defs.append("filter")
+    .attr("id", riverFilter.id)
+    .html(
+      '<feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="4"></feTurbulence>' +
+      '<feColorMatrix values="0 0 0 0 0, 0 0 0 0 0, 0 0 0 0 0, 0 0 0 -0.9 1.2" result="texture"></feColorMatrix>' +
+      '<feComposite in="SourceGraphic" in2="texture" operator="in"></feComposite>' +
+      '<feGaussianBlur stdDeviation="1.5"></feGaussianBlur>'
+    );
+
+  var riverLine = d3.line().curve(d3.curveCardinal.tension(0.3));
+
+  var riverGroup = svg.append("g")
+    .attr("class", "river")
+    .attr("filter", riverFilter);
+
+  riverGroup.append("path")
+    .attr("d", riverLine(riverProjected))
+    .attr("fill", "none")
+    .attr("stroke", "#2e86c1")
+    .attr("stroke-width", 5)
+    .attr("stroke-linecap", "round")
+    .attr("stroke-linejoin", "round")
+    .attr("opacity", 0.8);
+
+  // --- Lees Ferry watercolor marker ---
+  var leesFerry = projection([-111.59, 36.87]);
+  if (leesFerry) {
+    // Create a watercolor splotch filter for the marker
+    var markerSplotch = uid("markersplotch");
+    defs.append("filter")
+      .attr("id", markerSplotch.id)
+      .html(
+        '<feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="4"></feTurbulence>' +
+        '<feColorMatrix values="0 0 0 0 0, 0 0 0 0 0, 0 0 0 0 0, 0 0 0 -0.9 1.2" result="texture"></feColorMatrix>' +
+        '<feComposite in="SourceGraphic" in2="texture" operator="in"></feComposite>' +
+        '<feGaussianBlur stdDeviation="1.2"></feGaussianBlur>'
+      );
+
+    var markerGroup = svg.append("g")
+      .attr("transform", "translate(" + leesFerry[0] + "," + leesFerry[1] + ")")
+      .attr("filter", markerSplotch);
+
+    // Stack a few overlapping circles for a blobby watercolor dot
+    [-3, 2, 0, -1, 1].forEach(function(dx, i) {
+      var dy = [1, -2, 0, 2, -1][i];
+      var r = [8, 7, 10, 6, 9][i];
+      markerGroup.append("circle")
+        .attr("cx", dx)
+        .attr("cy", dy)
+        .attr("r", r)
+        .attr("fill", "#c0392b")
+        .attr("opacity", 0.5);
+    });
+
+    // Label
+    svg.append("text")
+      .attr("x", leesFerry[0] + 18)
+      .attr("y", leesFerry[1] - 2)
+      .attr("font-family", "Georgia, serif")
+      .attr("font-size", "13px")
+      .attr("font-style", "italic")
+      .attr("fill", "#2c3e50")
+      .attr("opacity", 0.8)
+      .text("Lees Ferry");
+  }
+
+});
+
+</script>
+</body>
