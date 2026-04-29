@@ -175,10 +175,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 </style>
 
 <script>
-  setTimeout(() => {
-    const overlay = document.getElementById('comingSoonOverlay');
-    if (overlay) {
-      overlay.style.display = 'flex';
-    }
-  }, 1000);
+  if (!localStorage.getItem('comingSoonDismissed')) {
+    setTimeout(() => {
+      const overlay = document.getElementById('comingSoonOverlay');
+      if (overlay) {
+        overlay.style.display = 'flex';
+      }
+    }, 1000);
+  }
+
+  document.getElementById('comingSoonOverlay')?.querySelector('button')?.addEventListener('click', () => {
+    localStorage.setItem('comingSoonDismissed', 'true');
+  });
 </script>
