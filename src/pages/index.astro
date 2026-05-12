@@ -47,6 +47,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     filter: brightness(0.75) saturate(0.85);
   }
 
+  @media (max-width: 600px) {
+    .hero-video {
+      transform: scale(0.75);
+      transform-origin: center center;
+      width: 140%;
+      height: 140%;
+      left: -20%;
+      top: -20%;
+    }
+  }
+
+
   .hero::before {
     content: '';
     position: absolute;
