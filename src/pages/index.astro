@@ -3,6 +3,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 <BaseLayout title="The Connected Earth">
   <section class="hero">
+    <video class="hero-video" autoplay muted loop playsinline>
+      <source src="/videos/beachbook.mp4" type="video/mp4" />
+    </video>
     <img
       class="logo"
       src="/images/Logo_Circle.png"
@@ -30,7 +33,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     display: flex;
     align-items: center;
     justify-content: center;
-    background: url('/images/pexels-abdghat-1631677.jpg') center center / cover no-repeat;
+    overflow: hidden;
+  }
+
+  .hero-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    z-index: 0;
+    filter: brightness(0.75) saturate(0.85);
   }
 
   .hero::before {
@@ -39,7 +53,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     inset: 0;
     background: rgba(255, 255, 255, 0.12);
     pointer-events: none;
-    z-index: 0;
+    z-index: 1;
   }
 
   .logo {
@@ -51,12 +65,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     height: 110px;
     object-fit: contain;
     filter: drop-shadow(0 2px 12px rgba(0,0,0,0.15));
-    z-index: 1;
+    z-index: 2;
   }
 
   .hero-content {
     position: relative;
-    z-index: 1;
+    z-index: 2;
     display: flex;
     flex-direction: column;
     align-items: center;
