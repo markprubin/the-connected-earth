@@ -4,11 +4,12 @@ import Header from '../components/Header.astro';
 ---
 <BaseLayout title="About">
   <div class="page">
-    <video class="bg-video" autoplay muted loop playsinline>
-      <source src="/videos/horizon.mp4" type="video/mp4" />
-    </video>
-    <div class="bg-overlay"></div>
     <Header />
+    <div class="hero-video">
+      <video autoplay muted loop playsinline>
+        <source src="/videos/horizon.mp4" type="video/mp4" />
+      </video>
+    </div>
     <main>
       <div class="content">
         <p class="label">About</p>
@@ -36,30 +37,23 @@ import Header from '../components/Header.astro';
 <style>
   .page {
     min-height: 100vh;
-    position: relative;
+    background: #ffffff;
     color: #1a1a1a;
   }
 
-  .bg-video {
-    position: fixed;
-    top: 0;
-    left: 0;
+  .hero-video {
+    width: 100%;
+    height: 40vh;
+    overflow: hidden;
+  }
+
+  .hero-video video {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center;
-    z-index: -2;
+    object-position: center 40%;
+    display: block;
     filter: brightness(0.85) saturate(0.8);
-  }
-
-  .bg-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.72);
-    z-index: -1;
   }
 
   main {
