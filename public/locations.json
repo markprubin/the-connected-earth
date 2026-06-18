@@ -1,0 +1,82 @@
+[
+  {
+    "city": "Santa Rosa, CA",
+    "lat": 38.4404,
+    "lon": -122.7141,
+    "name": "Maria Alvarez",
+    "story": "After the Tubbs Fire",
+    "date": "Mar 2025",
+    "category": "Mass Migration",
+    "link": "https://your-site.com/story/santa-rosa"
+  },
+  {
+    "city": "Phoenix, AZ",
+    "lat": 33.4484,
+    "lon": -112.0740,
+    "name": "James Okafor",
+    "story": "Heat and the Grid",
+    "date": "Jul 2025",
+    "category": "Food Systems",
+    "link": "https://your-site.com/story/phoenix"
+  },
+  {
+    "city": "Cape Town, South Africa",
+    "lat": -33.9249,
+    "lon": 18.4241,
+    "name": "Nomsa Dlamini",
+    "story": "Day Zero, Five Years On",
+    "date": "Jan 2026",
+    "category": "Ocean",
+    "link": "https://your-site.com/story/cape-town"
+  },
+  {
+    "city": "Dhaka, Bangladesh",
+    "lat": 23.8103,
+    "lon": 90.4125,
+    "name": "Rahim Chowdhury",
+    "story": "When the River Moves",
+    "date": "Feb 2026",
+    "category": "Flood Risk",
+    "link": "https://your-site.com/story/dhaka"
+  },
+  {
+    "city": "Medellín, Colombia",
+    "lat": 6.2442,
+    "lon": -75.5812,
+    "name": "Valentina Ríos",
+    "story": "The Green Corridors",
+    "date": "Nov 2025",
+    "category": "Food Systems",
+    "link": "https://your-site.com/story/medellin"
+  },
+  {
+    "city": "Fairbanks, AK",
+    "lat": 64.8378,
+    "lon": -147.7164,
+    "name": "Ellen Sookiayak",
+    "story": "Permafrost and Memory",
+    "date": "Sep 2025",
+    "category": "Ocean",
+    "link": "https://your-site.com/story/fairbanks"
+  },
+  {
+    "city": "Lagos, Nigeria",
+    "lat": 6.5244,
+    "lon": 3.3792,
+    "name": "Chidi Eze",
+    "story": "Tides at the Edge of the City",
+    "date": "Apr 2026",
+    "category": "Flood Risk",
+    "link": "https://your-site.com/story/lagos"
+  },
+  {
+    "city": "Jakarta, Indonesia",
+    "lat": -6.2088,
+    "lon": 106.8456,
+    "name": "Sari Wulandari",
+    "story": "The Sinking Capital",
+    "date": "Jun 2025",
+    "category": "Flood Risk",
+    "link": "https://your-site.com/story/jakarta"
+  }
+]

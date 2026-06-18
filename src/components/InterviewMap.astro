@@ -1,0 +1,283 @@
+---
+export interface Location {
+  city: string;
+  lat: number;
+  lon: number;
+  name?: string;
+  story?: string;
+  date?: string;
+  link?: string;
+  category?: string;
+}
+
+interface Props {
+  locations?: Location[];
+}
+
+const config = {
+  ocean:         "#f2ebdd",
+  landTop:       "#fffefa",
+  landMid:       "#fbf4e6",
+  landBottom:    "#f0e4cd",
+  landStroke:    "rgba(58,46,26,0.30)",
+  shadowColor:   "#9c8a64",
+  shadowOpacity: 0.42,
+  graticule:     "rgba(120,98,60,0.10)",
+  showGraticule: true,
+  pin:           "#1a1714",
+  pinHalo:       "#fffdf8",
+  text:          "#1a1714",
+  muted:         "#9a8f7c",
+  cardBg:        "#ffffff",
+  cardBorder:    "#e9e1d0",
+  accent:        "#1a1714",
+  accentText:    "#fdfaf4",
+  maxZoom:       8,
+  hint:          "Scroll to zoom · drag to pan · click a marker",
+};
+
+const { locations = [] } = Astro.props;
+const uid = "imap-" + Math.random().toString(36).slice(2, 9);
+---
+
+<div id={uid} class="interview-map"></div>
+
+<style>
+  .interview-map {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    display: block;
+  }
+</style>
+
+<script define:vars={{ uid, locations, config }}>
+  (async () => {
+    const root = document.getElementById(uid);
+    if (!root) return;
+    const C = config;
+
+    if (!document.getElementById("imap-fonts")) {
+      const l = document.createElement("link");
+      l.id = "imap-fonts";
+      l.rel = "stylesheet";
+      l.href = "https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap";
+      document.head.appendChild(l);
+    }
+
+    if (!document.getElementById("imap-keyframes")) {
+      const s = document.createElement("style");
+      s.id = "imap-keyframes";
+      s.textContent =
+        "@keyframes imap-ripple{0%{transform:scale(1);opacity:0.55}100%{transform:scale(5);opacity:0}}" +
+        "@keyframes imap-glow{0%,100%{box-shadow:0 0 0 2.5px #fff,0 0 5px currentColor}50%{box-shadow:0 0 0 2.5px #fff,0 0 16px currentColor}}" +
+        "@keyframes imap-cardin{from{opacity:0}to{opacity:1}}";
+      document.head.appendChild(s);
+    }
+
+    const [d3, topo] = await Promise.all([
+      import("https://cdn.jsdelivr.net/npm/d3@7/+esm"),
+      import("https://cdn.jsdelivr.net/npm/topojson-client@3/+esm"),
+    ]);
+
+    const W = 1600, H = 900;
+    const projection = d3.geoMercator().scale(W / (2 * Math.PI)).translate([W / 2, H / 2 + 78]);
+    const path = d3.geoPath(projection);
+
+    const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+    Object.assign(root.style, {
+      position: "relative",
+      overflow: "hidden",
+      background: C.ocean,
+      containerType: "inline-size",
+      cursor: "grab",
+      fontFamily: "'Hanken Grotesk', system-ui, sans-serif",
+    });
+
+    const stage = document.createElement("div");
+    Object.assign(stage.style, { position: "absolute", inset: "0", transformOrigin: "0 0" });
+    root.appendChild(stage);
+
+    const svg = d3.select(stage).append("svg")
+      .attr("viewBox", "0 0 " + W + " " + H)
+      .attr("preserveAspectRatio", "xMidYMid meet")
+      .style("position", "absolute").style("inset", "0")
+      .style("width", "100%").style("height", "100%").style("display", "block");
+
+    const defs = svg.append("defs");
+    const lg = defs.append("linearGradient").attr("id", uid + "-land")
+      .attr("x1", 0).attr("y1", 0).attr("x2", 0).attr("y2", 1);
+    lg.append("stop").attr("offset", "0%").attr("stop-color", C.landTop);
+    lg.append("stop").attr("offset", "55%").attr("stop-color", C.landMid);
+    lg.append("stop").attr("offset", "100%").attr("stop-color", C.landBottom);
+    const flt = defs.append("filter").attr("id", uid + "-shadow")
+      .attr("x", "-20%").attr("y", "-20%").attr("width", "140%").attr("height", "140%");
+    flt.append("feDropShadow").attr("dx", 0).attr("dy", 2).attr("stdDeviation", 7)
+      .attr("flood-color", C.shadowColor).attr("flood-opacity", C.shadowOpacity);
+
+    if (C.showGraticule) {
+      svg.append("path").datum(d3.geoGraticule().step([20, 20])())
+        .attr("d", path).attr("fill", "none").attr("stroke", C.graticule)
+        .attr("stroke-width", 0.6).attr("vector-effect", "non-scaling-stroke");
+    }
+
+    const world = await fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json").then((r) => r.json());
+    const land = topo.merge(world, world.objects.countries.geometries);
+    svg.append("path").datum(land).attr("d", path)
+      .attr("fill", "url(#" + uid + "-land)")
+      .attr("stroke", C.landStroke).attr("stroke-width", 0.8).attr("stroke-linejoin", "round")
+      .attr("vector-effect", "non-scaling-stroke").attr("filter", "url(#" + uid + "-shadow)");
+
+    const layer = document.createElement("div");
+    Object.assign(layer.style, { position: "absolute", inset: "0", pointerEvents: "none" });
+    stage.appendChild(layer);
+
+    let card = null, openLoc = null;
+    const closeCard = () => { if (card) { card.remove(); card = null; } openLoc = null; };
+    root.addEventListener("click", closeCard);
+
+    // Compute where the SVG actually renders inside the stage (xMidYMid meet letterboxes it)
+    const getSvgViewport = () => {
+      const cW = root.clientWidth, cH = root.clientHeight;
+      const scale = Math.min(cW / W, cH / H);
+      const vW = W * scale, vH = H * scale;
+      return { offX: (cW - vW) / 2, offY: (cH - vH) / 2, scale };
+    };
+
+    const screenXY = (loc) => {
+      const { offX, offY, scale } = getSvgViewport();
+      const lx = offX + loc._x * scale;
+      const ly = offY + loc._y * scale;
+      return [currentT.x + lx * currentT.k, currentT.y + ly * currentT.k];
+    };
+    const positionCard = () => {
+      if (!card || !openLoc) return;
+      const w = root.clientWidth, h = root.clientHeight;
+      const xy = screenXY(openLoc);
+      const right = xy[0] > w / 2;
+      card.style.left = xy[0] + "px";
+      card.style.top = Math.min(h - 16, Math.max(16, xy[1])) + "px";
+      card.style.transform = right ? "translate(calc(-100% - 22px), -50%)" : "translate(22px, -50%)";
+    };
+
+    const openCard = (loc) => {
+      closeCard();
+      openLoc = loc;
+      card = document.createElement("div");
+      Object.assign(card.style, {
+        position: "absolute", zIndex: "10", width: "19%", minWidth: "240px", maxWidth: "330px",
+        boxSizing: "border-box", background: C.cardBg, border: "1px solid " + C.cardBorder,
+        borderRadius: "16px", padding: "1.5em 1.6em", boxShadow: "0 28px 60px rgba(26,23,20,.16)",
+        animation: "imap-cardin .26s ease both", pointerEvents: "auto",
+      });
+      card.addEventListener("click", (e) => e.stopPropagation());
+      card.innerHTML =
+        '<div data-close style="position:absolute;top:1em;right:1em;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:' + C.muted + ';cursor:pointer;font-size:17px;line-height:1;background:rgba(0,0,0,.05)">×</div>' +
+        '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:0.7cqw;letter-spacing:.18em;text-transform:uppercase;color:' + C.muted + ';margin-bottom:1em">' + esc(loc.city) + '</div>' +
+        '<div style="font-size:1.5cqw;font-weight:700;color:' + C.text + ';line-height:1.12;letter-spacing:-0.02em">' + esc(loc.name) + '</div>' +
+        (loc.story ? '<div style="font-size:1cqw;color:' + C.muted + ';line-height:1.45;margin-top:.7em">' + esc(loc.story) + '</div>' : "") +
+        '<div style="height:1px;background:' + C.cardBorder + ';margin:1.1em 0"></div>' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">' +
+          '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:0.72cqw;color:' + C.muted + '">' + esc(loc.date) + '</div>' +
+          (loc.link ? '<a href="' + esc(loc.link) + '" style="font-size:0.8cqw;font-weight:600;color:' + C.accentText + ';text-decoration:none;background:' + C.accent + ';border-radius:999px;padding:6px 14px;white-space:nowrap">Read story →</a>' : "") +
+        '</div>';
+      card.querySelector("[data-close]").addEventListener("click", (e) => { e.stopPropagation(); closeCard(); });
+      root.appendChild(card);
+      positionCard();
+    };
+
+    const CAT_COLORS = {
+      'Ocean':          '#3d7a8a',
+      'Flood Risk':     '#5a7fa8',
+      'Food Systems':   '#6b8f5a',
+      'Mass Migration': '#c07a4a',
+    };
+
+    const pinEls = [];
+    locations.forEach((loc) => {
+      const p = projection([loc.lon, loc.lat]);
+      if (!p) return;
+      loc._x = p[0]; loc._y = p[1];
+      const wrap = document.createElement("div");
+      wrap._category = loc.category || null;
+      Object.assign(wrap.style, {
+        position: "absolute", left: "0", top: "0",
+        width: "0", height: "0", pointerEvents: "auto", cursor: "pointer", color: CAT_COLORS[loc.category] || C.pin,
+        transformOrigin: "50% 50%",
+      });
+      wrap.innerHTML =
+        '<div style="position:absolute;left:-6px;top:-6px;width:12px;height:12px;border-radius:50%;background:currentColor;transform-origin:center;animation:imap-ripple 2.8s cubic-bezier(0,.6,.4,1) infinite"></div>' +
+        '<div style="position:absolute;left:-6px;top:-6px;width:12px;height:12px;border-radius:50%;background:currentColor;transform-origin:center;animation:imap-ripple 2.8s cubic-bezier(0,.6,.4,1) infinite 1.4s"></div>' +
+        '<div data-dot style="position:absolute;left:-5px;top:-5px;width:10px;height:10px;border-radius:50%;background:currentColor;box-shadow:0 0 0 2.5px #fff,0 0 5px currentColor;animation:imap-glow 2.8s ease-in-out infinite;transition:transform .22s cubic-bezier(.2,.8,.2,1)"></div>' +
+        '<div data-label style="position:absolute;left:0;top:15px;transform:translateX(-50%);opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;background:' + C.cardBg + ';border:1px solid ' + C.cardBorder + ';border-radius:9px;padding:6px 12px 7px;box-shadow:0 8px 22px rgba(26,23,20,.12)">' +
+          '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:0.6cqw;letter-spacing:.14em;text-transform:uppercase;color:' + C.muted + '">' + esc(loc.city) + '</div>' +
+          (loc.name ? '<div style="font-size:0.82cqw;font-weight:600;color:' + C.text + ';margin-top:2px">' + esc(loc.name) + '</div>' : "") +
+        '</div>';
+      const dot = wrap.querySelector("[data-dot]");
+      const label = wrap.querySelector("[data-label]");
+      wrap._apply = () => { wrap.style.transform = "scale(" + (1 / currentT.k) + ")"; };
+      wrap.addEventListener("mouseenter", () => { dot.style.transform = "scale(1.5)"; label.style.opacity = "1"; });
+      wrap.addEventListener("mouseleave", () => { dot.style.transform = "scale(1)"; label.style.opacity = "0"; });
+      wrap.addEventListener("click", (e) => { e.stopPropagation(); openCard(loc); });
+      layer.appendChild(wrap);
+      pinEls.push(wrap);
+    });
+
+    const repositionPins = () => {
+      const { offX, offY, scale } = getSvgViewport();
+      pinEls.forEach((wrap, i) => {
+        const loc = locations[i];
+        if (!loc) return;
+        wrap.style.left = (offX + loc._x * scale) + "px";
+        wrap.style.top  = (offY + loc._y * scale) + "px";
+      });
+    };
+    repositionPins();
+
+    let currentT = d3.zoomIdentity;
+    const zoom = d3.zoom()
+      .scaleExtent([1, C.maxZoom])
+      .translateExtent([[0, 0], [root.clientWidth, root.clientHeight]])
+      .extent([[0, 0], [root.clientWidth, root.clientHeight]])
+      .on("start", () => { root.style.cursor = "grabbing"; })
+      .on("end", () => { root.style.cursor = "grab"; })
+      .on("zoom", (ev) => {
+        currentT = ev.transform;
+        stage.style.transform = "translate(" + currentT.x + "px," + currentT.y + "px) scale(" + currentT.k + ")";
+        pinEls.forEach((w) => w._apply());
+        positionCard();
+      });
+    d3.select(root).call(zoom);
+
+    const ro = new ResizeObserver(() => {
+      const w = root.clientWidth, h = root.clientHeight;
+      zoom.translateExtent([[0, 0], [w, h]]).extent([[0, 0], [w, h]]);
+      repositionPins();
+      positionCard();
+    });
+    ro.observe(root);
+
+    if (C.hint) {
+      const hint = document.createElement("div");
+      Object.assign(hint.style, {
+        position: "absolute", bottom: "6.5%", left: "5%", pointerEvents: "none", zIndex: "5",
+        fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.66cqw",
+        color: C.muted, letterSpacing: ".12em", textTransform: "uppercase",
+      });
+      hint.textContent = C.hint;
+      root.appendChild(hint);
+    }
+
+    // Category filter support via CustomEvent
+    root.addEventListener("filter-category", (e) => {
+      const cat = e.detail && e.detail.category;
+      pinEls.forEach((w) => {
+        const visible = !cat || cat === "all" || w._category === cat;
+        w.style.display = visible ? "" : "none";
+        if (!visible && openLoc && openLoc.category === w._category) closeCard();
+      });
+    });
+  })();
+</script>

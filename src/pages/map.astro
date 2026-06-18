@@ -1,0 +1,200 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import InterviewMap from '../components/InterviewMap.astro';
+import locationsData from '../../public/locations.json';
+---
+<BaseLayout title="Map">
+  <div id="map-wrap">
+    <header class="map-nav">
+      <a href="/" class="map-back">← Back</a>
+      <span class="map-logo">the connected earth</span>
+      <div class="nav-separator"></div>
+      <div class="filters-group">
+        <span class="filters-label">Filter by Category →</span>
+        <div class="filters">
+        <button class="filter active" data-cat="all">All</button>
+        <button class="filter" data-cat="Ocean">Ocean</button>
+        <button class="filter" data-cat="Flood Risk">Flood Risk</button>
+        <button class="filter" data-cat="Food Systems">Food Systems</button>
+        <button class="filter" data-cat="Mass Migration">Mass Migration</button>
+        </div>
+      </div>
+    </header>
+
+    <div id="map-area">
+      <InterviewMap locations={locationsData} />
+      <div id="map-title">
+        <div class="title-label">Interviews</div>
+        <h2 class="title-heading">Stories that<br>Connect the Earth</h2>
+        <div class="title-meta">
+          <div class="title-rule"></div>
+          <span id="location-count">{String(locationsData.length).padStart(2, '0')} locations</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  html, body { height: 100%; width: 100%; overflow: hidden; }
+
+  #map-wrap {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+  }
+
+  .map-nav {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 14px 28px;
+    background: #faf9f5;
+    border-bottom: 1px solid rgba(26, 23, 20, 0.09);
+    flex-shrink: 0;
+    z-index: 100;
+  }
+  .map-back {
+    font-family: 'Formera', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(26, 23, 20, 0.4);
+    text-decoration: none;
+    transition: color 0.2s;
+    white-space: nowrap;
+  }
+  .map-back:hover { color: #1a1714; }
+  .map-logo {
+    font-family: 'Beth Ellen', cursive;
+    font-size: 1.05rem;
+    color: #1a1714;
+    white-space: nowrap;
+  }
+
+  .nav-separator {
+    width: 1px;
+    height: 22px;
+    background: rgba(26, 23, 20, 0.12);
+    margin: 0 8px;
+    flex-shrink: 0;
+  }
+
+  .filters-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .filters-label {
+    font-family: 'Formera', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #1a1714;
+    white-space: nowrap;
+  }
+
+  .filters { display: flex; gap: 6px; flex-wrap: wrap; }
+  .filter {
+    font-family: 'Formera', sans-serif;
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 2px;
+    border: 1px solid rgba(26, 23, 20, 0.18);
+    background: transparent;
+    color: rgba(26, 23, 20, 0.5);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter:hover { border-color: rgba(26, 23, 20, 0.45); color: #1a1714; }
+  .filter.active { background: #1a1714; border-color: #1a1714; color: #faf9f5; }
+
+  /* Ocean */
+  .filter[data-cat="Ocean"]               { background: rgba(61,122,138,0.08); border-color: rgba(61,122,138,0.3); color: #3d7a8a; }
+  .filter[data-cat="Ocean"]:hover         { background: rgba(61,122,138,0.18); border-color: rgba(61,122,138,0.6); }
+  .filter[data-cat="Ocean"].active        { background: #3d7a8a; border-color: #3d7a8a; color: #fff; }
+
+  /* Flood Risk */
+  .filter[data-cat="Flood Risk"]          { background: rgba(90,127,168,0.08); border-color: rgba(90,127,168,0.3); color: #5a7fa8; }
+  .filter[data-cat="Flood Risk"]:hover    { background: rgba(90,127,168,0.18); border-color: rgba(90,127,168,0.6); }
+  .filter[data-cat="Flood Risk"].active   { background: #5a7fa8; border-color: #5a7fa8; color: #fff; }
+
+  /* Food Systems */
+  .filter[data-cat="Food Systems"]        { background: rgba(107,143,90,0.08); border-color: rgba(107,143,90,0.3); color: #6b8f5a; }
+  .filter[data-cat="Food Systems"]:hover  { background: rgba(107,143,90,0.18); border-color: rgba(107,143,90,0.6); }
+  .filter[data-cat="Food Systems"].active { background: #6b8f5a; border-color: #6b8f5a; color: #fff; }
+
+  /* Mass Migration */
+  .filter[data-cat="Mass Migration"]        { background: rgba(192,122,74,0.08); border-color: rgba(192,122,74,0.3); color: #c07a4a; }
+  .filter[data-cat="Mass Migration"]:hover  { background: rgba(192,122,74,0.18); border-color: rgba(192,122,74,0.6); }
+  .filter[data-cat="Mass Migration"].active { background: #c07a4a; border-color: #c07a4a; color: #fff; }
+
+  #map-title {
+    position: absolute;
+    top: 52%;
+    left: 3%;
+    z-index: 10;
+    pointer-events: none;
+  }
+  .title-label {
+    font-family: 'Chakra Petch', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: #9a8f7c;
+    margin-bottom: 8px;
+  }
+  .title-heading {
+    font-family: 'Darker Grotesque', sans-serif;
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-weight: 700;
+    color: #1a1714;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    margin-bottom: 12px;
+  }
+  .title-meta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .title-rule {
+    width: 28px;
+    height: 1.5px;
+    background: #1a1714;
+  }
+  #location-count {
+    font-family: 'Chakra Petch', monospace;
+    font-size: 0.65rem;
+    color: #9a8f7c;
+    letter-spacing: 0.04em;
+  }
+
+  #map-area { flex: 1; overflow: hidden; position: relative; width: 100%; min-width: 0; }
+</style>
+
+<script>
+  const mapEl = document.querySelector('.interview-map')!;
+  const countEl = document.getElementById('location-count')!;
+  const total = Number(countEl.textContent?.split(' ')[0]);
+
+  const CAT_COUNTS: Record<string, number> = {
+    'Ocean': 2, 'Flood Risk': 3, 'Food Systems': 2, 'Mass Migration': 1,
+  };
+
+  document.querySelectorAll<HTMLButtonElement>('.filter').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const cat = btn.dataset.cat ?? 'all';
+      mapEl.dispatchEvent(new CustomEvent('filter-category', { detail: { category: cat } }));
+      const n = cat === 'all' ? total : (CAT_COUNTS[cat] ?? 0);
+      countEl.textContent = String(n).padStart(2, '0') + ' locations';
+    });
+  });
+</script>
